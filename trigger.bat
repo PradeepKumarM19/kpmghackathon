@@ -1,0 +1,1 @@
+spark-submit "C:\Users\rameshnewar\Documents\Git\kpmghackathon\starter.py" --config_file "C:\\Users\\rameshnewar\\Desktop\\config.csv"
