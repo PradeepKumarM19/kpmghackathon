@@ -19,9 +19,9 @@ class Root(Tk):
         self.labelFrame_files = ttk.LabelFrame(self, text = "Selected files")
         self.labelFrame_files.grid(column = 5, row = 4, padx=100, pady = 20)
 
-        self.button()
+        self.buttons()
  
-    def button(self):
+    def buttons(self):
         self.button = ttk.Button(self.labelFrame, text = "Select file/s", command = self.fileDialog)
         self.button.grid(column = 2, row = 1,padx=10, pady=20)
         self.button = ttk.Button(self.labelFrame, text = "Import", command = self.run_scd)
