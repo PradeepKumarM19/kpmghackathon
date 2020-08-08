@@ -3,7 +3,7 @@ from tkinter import filedialog
 import pandas as pd
 import datetime
 import argparse
-from interface import interface
+from interface import Interface
 
 class Root(Tk):
     def __init__(self, args):
@@ -43,15 +43,15 @@ class Root(Tk):
 
     def run_scd(self):
         self.destroy()
-        interface(self.filename, self.config_file)
+        Interface.execute_config(self.filename, self.config_file)
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Process arguments')
-
     parser.add_argument("--config_file", help='Should provide config file path/location')
     return parser.parse_args()
 
 if __name__ == "__main__":
     root = Root(parse_args())
     root.mainloop()
+

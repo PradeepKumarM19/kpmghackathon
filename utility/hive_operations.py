@@ -2,6 +2,9 @@ from pysprak.sql.functions import sha2
 from pysprak.sql.functions import concat
 from pysprak.sql.functions import format_string
 
+from utility import spark_utils
+from utility.spark_utils import SparkUtils
+
 READ_TABLE_WITH_PARTITION = """
 SELECT * FROM {table_name} where {partition}
 """
@@ -38,6 +41,19 @@ class HiveOperations:
     def does_table_exists(self, table_name):
         """Check if table exixts or not."""
         return self.spark._jcatalog.tableExists(table_name)
+
+
+    def read_raw_scd_records(
+            self,
+            raw_file,
+            scd_type,
+            scd_table,
+            primary_keys,
+            partition_keys,
+    ):
+        raw_input = SparkUtils.read_data(self.spark, "file", raw_file)
+        scd_table =  SparkUtils.read_data(self.spark, "table", scd_table)
+
 
     # def read_raw_scd_records(self, raw_table_name, scd_table_name, raw_partition=None, scd_partition=None):
     #     """Purpose : Read the Raw and Scd Table Records."""

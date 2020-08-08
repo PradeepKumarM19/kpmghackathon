@@ -27,3 +27,21 @@ class SparkUtils:
     def prepare_arguments(self, configuration):
         return " ".join(configuration['arguments'])
 
+    @staticmethod
+    def read_file(spark, input_path, sep=',', header='true'):
+        return (
+            spark.read.option("delimiter",sep).option("header",header).csv(input_path)
+        )
+
+    @staticmethod
+    def read_table(spark, input_table):
+        return spark.read.table(input_table)
+
+    @staticmethod
+    def read_data(spark, input_type, input_name):
+        if input_type == 'table':
+            return self.read_table(input)
+        elif input_type == 'file':
+            return self.read_file(spark, input_name)
+        else:
+            raise ValueError("incompatible input type provided!")
