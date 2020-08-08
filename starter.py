@@ -1,5 +1,4 @@
-from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, Tk
 from tkinter import filedialog
 import pandas as pd
 import datetime
