@@ -39,31 +39,31 @@ class HiveOperations:
         """Check if table exixts or not."""
         return self.spark._jcatalog.tableExists(table_name)
 
-    def read_raw_scd_records(self, raw_table_name, scd_table_name, raw_partition=None, scd_partition=None):
-        """Purpose : Read the Raw and Scd Table Records."""
-        #Check if the scd table exists
-        table_status = self.does_table_exists(scd_table_name)
+    # def read_raw_scd_records(self, raw_table_name, scd_table_name, raw_partition=None, scd_partition=None):
+    #     """Purpose : Read the Raw and Scd Table Records."""
+    #     #Check if the scd table exists
+    #     table_status = self.does_table_exists(scd_table_name)
 
-        if table_status:
-            #Read Raw Dataframe Records
-            if raw_partition:
-                raw_df = READ_TABLE_WITH_PARTITION.format(table_name=raw_table_name, partition=raw_partition)
-            else:
-                raw_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=raw_table_name)
+    #     if table_status:
+    #         #Read Raw Dataframe Records
+    #         if raw_partition:
+    #             raw_df = READ_TABLE_WITH_PARTITION.format(table_name=raw_table_name, partition=raw_partition)
+    #         else:
+    #             raw_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=raw_table_name)
 
-            #Read SCD Dataframe Records
-            if scd_partition:
-                scd_df = READ_TABLE_WITH_PARTITION.format(table_name=scd_table_name, partition=scd_partition)
-            else:
-                scd_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=scd_table_name)
-        else:
-            #Read Raw Dataframe Records
-            if raw_partition:
-                raw_df = READ_TABLE_WITH_PARTITION.format(table_name=raw_table_name, partition=raw_partition)
-            else:
-                raw_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=raw_table_name)
+    #         #Read SCD Dataframe Records
+    #         if scd_partition:
+    #             scd_df = READ_TABLE_WITH_PARTITION.format(table_name=scd_table_name, partition=scd_partition)
+    #         else:
+    #             scd_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=scd_table_name)
+    #     else:
+    #         #Read Raw Dataframe Records
+    #         if raw_partition:
+    #             raw_df = READ_TABLE_WITH_PARTITION.format(table_name=raw_table_name, partition=raw_partition)
+    #         else:
+    #             raw_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=raw_table_name)
 
-            #Set SCD DF to NONE
-            scd_df = None
+    #         #Set SCD DF to NONE
+    #         scd_df = None
 
-        return raw_df, scd_df
+    #     return raw_df, scd_df
