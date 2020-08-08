@@ -2,13 +2,14 @@ from tkinter import ttk, Tk
 from tkinter import filedialog
 import pandas as pd
 import datetime
-import numpy as np
-import os
-#import spark_main
- 
+import argparse
+from interface import interface
+
 class Root(Tk):
-    def __init__(self):
+    def __init__(self, args):
         super(Root, self).__init__()
+
+        self.config_file = args.config_file
         self.title("SCD files import")
         self.minsize(300, 150)
 
@@ -23,9 +24,9 @@ class Root(Tk):
     def button(self):
         self.button = ttk.Button(self.labelFrame, text = "Select file/s", command = self.fileDialog)
         self.button.grid(column = 2, row = 1,padx=10, pady=20)
-        self.button = ttk.Button(self.labelFrame, text = "Import",command = self.check_file)
+        self.button = ttk.Button(self.labelFrame, text = "Import", command = self.run_scd)
         self.button.grid(column = 1, row = 3,padx=10, pady=20)
-        self.button = ttk.Button(self.labelFrame, text = "Cancel",command = self.quit)
+        self.button = ttk.Button(self.labelFrame, text = "Cancel", command = self.quit)
         self.button.grid(column = 3, row = 3,padx=10, pady=20)
 
     def fileDialog(self):
@@ -40,10 +41,17 @@ class Root(Tk):
             self.label.configure(text = self.filename[i])
     
 
-    def check_file(self):
-        pass
-        # spark_main.main(self.filename)
+    def run_scd(self):
+        self.destroy()
+        interface(self.filename, self.config_file)
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Process arguments')
+
+    parser.add_argument("--config_file", help='Should provide config file path/location')
+    return parser.parse_args()
 
 if __name__ == "__main__":
-    root = Root()
+    root = Root(parse_args())
     root.mainloop()

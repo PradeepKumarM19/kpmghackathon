@@ -129,12 +129,4 @@ class ScdComputation:
         )
         return final_df
 
-
-
-
-        
-
-        
-
-
             
