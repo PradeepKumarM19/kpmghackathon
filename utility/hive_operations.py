@@ -10,6 +10,26 @@ READ_TABLE_WITHOUT_PARTITION = """
 SELECT * FROM {table_name}
 """
 
+INSERT_INTO_WITH_PARTITION = """
+INSERT INTO TABLE {table_name} PARTITION({partition})
+SELECT * FROM {view_name}
+"""
+
+INSERT_INTO_WITHOUT_PARTITION = """
+INSERT INTO TABLE {table_name} SELECT * FROM {view_name}
+"""
+
+INSERT_OVERWRITE_WITH_PARTITION = """
+INSERT OVERWRITE TABLE {table_name} PARTITION({partition})
+SELECT * FROM {view_name}
+"""
+
+INSERT_OVERWRITE_WITHOUT_PARTITION = """
+INSERT OVERWRITE TABLE {table_name}
+SELECT * FROM {view_name}
+"""
+
+
 class HiveOperations:
     def __init__(self, spark, logger):
         self.spark = spark
@@ -67,3 +87,35 @@ class HiveOperations:
     #         scd_df = None
 
     #     return raw_df, scd_df
+
+    def insert_into_operation(self, dataframe, table_name, partition_column=None):
+        """Insert into hive table."""
+        dataframe.createOrReplaceTempView("temp_view")
+        if partition_column:
+            query = INSERT_INTO_WITH_PARTITION.format(
+                table_name=table_name,
+                partition=partition_column,
+                view_name="temp_view"
+            )
+        else:
+            query = INSERT_INTO_WITHOUT_PARTITION.format(
+                table_name=table_name,
+                view_name="temp_view"
+            )
+        self.spark.sql(query)
+
+    def insert_overwrite_operation(self, dataframe, table_name, partition_column=None):
+        """Insert overwrite into hive table."""
+        dataframe.createOrReplaceTempView("temp_view")
+        if partition_column:
+            query = INSERT_OVERWRITE_WITH_PARTITION.format(
+                table_name=table_name,
+                partition=partition_column,
+                view_name="temp_view"
+            )
+        else:
+            query = INSERT_OVERWRITE_WITHOUT_PARTITION.format(
+                table_name=table_name,
+                view_name="temp_view"
+            )
+        self.spark.sql(query)
