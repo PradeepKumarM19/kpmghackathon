@@ -1,23 +1,5 @@
-from pyspark.sql.functions import udf, lit, when, date_sub, col
-from pyspark.sql.types import ArrayType, IntegerType, StructType, StructField, StringType, BooleanType, DateType
-import json
-from pyspark import SparkContext, SparkConf, SQLContext
-from pyspark.sql import Row
+from pyspark.sql.functions import lit, when, date_sub, col
 from datetime import datetime
-
-#Remove once Generalized 
-appName = "Spark SCD Merge Example"
-master = "local"
-conf = SparkConf().setAppName(appName).setMaster(master)
-sc = SparkContext(conf=conf)
-sqlContext = SQLContext(sc)
-def quiet_logs(sc):
-    logger = sc._jvm.org.apache.log4j
-    logger.LogManager.getLogger("org"). setLevel(logger.Level.ERROR)
-    logger.LogManager.getLogger("akka").setLevel(logger.Level.ERROR)
-
-# hide info logs
-quiet_logs(sc)
 
 high_date = datetime.strptime('9999-12-31', '%Y-%m-%d').date()
 current_date = datetime.today().date()
