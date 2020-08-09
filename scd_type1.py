@@ -2,11 +2,6 @@ import logging
 
 logger = logging.getLogger(__file__)
 
-# class ScdType1:
-#     def __init__(self, spark, logger):
-#         """Constructor."""
-#         self.spark = spark
-        # self.logger = logger
 
 def scd_type_1(spark, raw_df, scd_df, config_file, hive_object, scd_object):
     """Purpose  : Get the final Dataframe after SCD type1 Computation
@@ -29,11 +24,11 @@ def scd_type_1(spark, raw_df, scd_df, config_file, hive_object, scd_object):
         column_list = scd_df.columns
         new_records_df = scd_object.scd1_new_records(raw_df, scd_df)
         new_records_df = new_records_df.select(column_list)
-        print("new_records_df:", new_records_df.show())
+
         unchanged_records_df = scd_object.scd1_unchanged_records(raw_df, scd_df)
-        print("unchanged_records_df:", unchanged_records_df.show())
+
         final_df = new_records_df.union(unchanged_records_df)
-        print("final_df:", final_df.show())
+
     else:
         column_list = raw_df.columns
         if partition_column:
