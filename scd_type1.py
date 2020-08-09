@@ -13,6 +13,7 @@ def scd_type_1(spark, raw_df, scd_df, config_file, hive_object, scd_object):
         Result   : Returns the New and Update records
     """
     primary_key_columns = config_file['primary_key'].split(",")
+    partition_column = config_file['partition_column'].split(",")
     #Get the column list for record has calculation
     column_list = raw_df.columns
     record_hash_columns = [column for column in column_list if column not in primary_key_columns]
@@ -25,15 +26,23 @@ def scd_type_1(spark, raw_df, scd_df, config_file, hive_object, scd_object):
 
     if scd_df:
         #Perform SCD Computation
-        final_df = scd_object.scd1_records(raw_df, scd_df)
-
+        column_list = scd_df.columns
+        new_records_df = scd_object.scd1_new_records(raw_df, scd_df)
+        new_records_df = new_records_df.select(column_list)
+        print("new_records_df:", new_records_df.show())
+        unchanged_records_df = scd_object.scd1_unchanged_records(raw_df, scd_df)
+        print("unchanged_records_df:", unchanged_records_df.show())
+        final_df = new_records_df.union(unchanged_records_df)
+        print("final_df:", final_df.show())
     else:
-        final_df = raw_df
+        column_list = raw_df.columns
+        non_partition_column = [column for column in column_list if column not in partition_column]
+        final_df_column = [*non_partition_column, *partition_column]
+        final_df = raw_df.select(final_df_column)
         hive_object.create_table_operation(
-            final_df, config_file['schema'], config_file['target_table']
+            final_df, config_file['schema'], config_file['target_table'], partition_column=partition_column
         )
 
     hive_object.insert_overwrite_operation(
-        final_df, config_file['target_table'], config_file['partition_column']
+        final_df, config_file['schema'], config_file['target_table'], partition_column=partition_column
     )
-

@@ -34,6 +34,8 @@ class Interface:
             SparkSession
             .builder
             .enableHiveSupport()
+            .config("hive.exec.dynamic.partition", "true")
+            .config("hive.exec.dynamic.partition.mode", "non-strict")
             .appName("My main")
             .getOrCreate()
         )
@@ -56,19 +58,14 @@ class Interface:
             logger.info(file_config)
 
             raw_df = hive_object.read_raw_records(file)
-            scd_df = None
-            # if hive_object.does_table_exists(file_config['target_table']):
-            #     scd_df = hive_object.read_scd_table(file_config['target_table'])
-            # else:
-            #     scd_df = None
+            table_with_schema = f"{file_config['schema']}.{file_config['target_table']}"
+            if hive_object.does_table_exists(table_with_schema):
+                scd_df = hive_object.read_scd_table(table_with_schema)
+            else:
+                scd_df = None
 
             scd_invoke = SCD_FUNCTION[file_config['scd_type']]
-            final_df = scd_invoke(spark, raw_df, scd_df, file_config, hive_object, scd_object)
-
-            if not scd_df:
-                hive_object.create_table_operation(
-                    final_df, file_config['target_table'].split(".")[0], file_config['target_table'].split(".")[-1]
-                )
+            scd_invoke(spark, raw_df, scd_df, file_config, hive_object, scd_object)
 
             logger.info("Process Completed")
 

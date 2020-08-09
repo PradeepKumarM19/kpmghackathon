@@ -14,7 +14,7 @@ class ScdComputation:
         """ Add the audit columns for the input dataframe."""
         raw_df = (
             raw_df
-            .withColumn("src_is_current", lit(True))
+            .withColumn("src_activeflag", lit(1))
             .withColumn("src_start_date", lit(current_date))
             .withColumn("src_end_date", lit(high_date))
         ) 
@@ -60,7 +60,7 @@ class ScdComputation:
         ##Column names should be renamed before merge by removing src_
         latest_df = (
             merged_df.filter(merged_df.action == 'INSERT')
-            .withColumn("src_is_current", lit(True))
+            .withColumn("src_activeflag", lit(1))
             .select(raw_df_columns)
         )
         return latest_df
@@ -70,7 +70,7 @@ class ScdComputation:
         ##Column names should be renamed before merge by removing src_
         update_raw_df = (
             merged_df.filter(merged_df.action == 'UPSERT')
-            .withColumn("src_is_current", lit(True))
+            .withColumn("src_activeflag", lit(1))
             .select(raw_df_columns)
         )
         return update_raw_df
@@ -80,20 +80,33 @@ class ScdComputation:
         update_scd_records = (
             merged_df.filter(merged_df.action == 'UPSERT')
             .withColumn("end_date", date_sub(merged_df.src_start_date, 1))
-            .withColumn("is_current", lit(False))
+            .withColumn("activeflag", lit(0))
             .select(scd_df_columns)
         )
         return update_scd_records
 
-    def scd1_records(self, raw_df, scd_df):
+    def scd1_new_records(self, raw_df, scd_df):
         """Return the scd1 computed records."""
         condition = [col("left.primarykey") == col("right.primarykey"),
                      col("left.recordhash") == col("right.recordhash")]
-        final_df = (
+        new_record_df = (
             raw_df.alias("left")
             .join(scd_df.alias("right"), condition, "leftanti")
             .select("left.*")
         )
-        return final_df
+
+        return new_record_df
+
+    def scd1_unchanged_records(self, raw_df, scd_df):
+        """Return the scd1 computed records."""
+        condition = [col("left.primarykey") == col("right.primarykey"),
+                     col("left.recordhash") == col("right.recordhash")]
+        unchanged_records_df = (
+            scd_df.alias("left")
+            .join(raw_df.alias("right"), condition, "inner")
+            .select("left.*")
+        )
+
+        return unchanged_records_df
 
             

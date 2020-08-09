@@ -68,16 +68,19 @@ class HiveOperations:
         )
         return dataframe
 
-    def rename_source_dataframe_columns(self, src_dataframe, source_colum_list):
+    def rename_source_dataframe_columns(self, src_dataframe):
         """Prefix src_ to all the columns in source dataframe."""
+        source_colum_list = src_dataframe.columns
         for column in source_colum_list:
-            source_df = src_dataframe.withColumnRenamed(column, f"src_{column}")
-        return source_df
+            src_dataframe = src_dataframe.withColumnRenamed(column, f"src_{column}")
+        print("source_df:", src_dataframe.columns)
+        return src_dataframe
 
     def rename_target_dataframe_columns(self, targer_df, target_colum_list):
         """Remove the perfix src_ from all the columns in target dataframe."""
+        print("target_colum_list:", target_colum_list)
         for column in target_colum_list:
-            targer_df = target_colum_list.withColumnRenamed(column, column.split("src_", 1)[1])
+            targer_df = targer_df.withColumnRenamed(column, column.split("src_", 1)[1])
         return targer_df
 
     def does_table_exists(self, table_name):
@@ -123,9 +126,11 @@ class HiveOperations:
 
         self.spark.sql(f"CREATE SCHEMA IF NOT EXISTS {db_name}")
 
+        table_name = f"{db_name}.{table_name}"
+
         schema_list = dataframe.dtypes
-        if not external:
-            if not partition_column:
+        if external is None:
+            if partition_column is None:
                 schema = self.create_schema_operation(schema_list)
                 query = CREATE_INTERNAL_TABLE_WITHOUT_PARTITION.format(
                     table_name=table_name,
@@ -140,6 +145,7 @@ class HiveOperations:
                     schema=schema,
                     partition=partition_string,
                 )
+
         else:
             if not partition_column:
                 schema = self.create_schema_operation(schema_list)
@@ -160,6 +166,7 @@ class HiveOperations:
                 )
         
         #execute query
+
         self.spark.sql(query)
 
     def insert_into_operation(self, dataframe, table_name, partition_column=None):
@@ -192,27 +199,23 @@ class HiveOperations:
             )
         self.spark.sql(query)
 
-    def insert_overwrite_operation(self, dataframe, table_name, partition_column=None):
+    def insert_overwrite_operation(self, dataframe, db_name, table_name, partition_column=None):
         """Insert overwrite into hive table."""
         #dataframe.createOrReplaceTempView("temp_view")
-        
+        table_name = f"{db_name}.{table_name}"
         if partition_column:
-            #Reorder the partition columns at the end
-            column_list = dataframe.columns
-            non_partition_column = [column for column in column_list if column not in partition_column]
-            final_df_column = [*non_partition_column, *partition_column]
-            
-            #create the final df with partition column at the end.
-            final_df = dataframe.select(final_df_column)
+            # #Reorder the partition columns at the end
 
-            #create a temp view
-            final_df.createOrReplaceTempView("temp_view")
+            dataframe.createOrReplaceTempView("temp_view")
+
+            partition_string = ",".join(partition_column)
 
             query = INSERT_OVERWRITE_WITH_PARTITION.format(
                 table_name=table_name,
-                partition=partition_column,
+                partition=partition_string,
                 view_name="temp_view"
             )
+
         else:
             #create a temp view
             dataframe.createOrReplaceTempView("temp_view")

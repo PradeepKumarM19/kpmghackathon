@@ -1,0 +1,3 @@
+file_id,file_name,scd_type,schema,target_table,primary_key,partition_column,date_format
+1,insurance_data.csv,1,crm,insurance,policyID,county,
+2,insurance_transaction.csv,2,sales,ins_trans,policyID,"activeflag,county",
