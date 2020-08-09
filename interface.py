@@ -55,9 +55,9 @@ class Interface:
             #     scd_df = hive_object.read_scd_table(file_config['target_table'])
             # else:
             #     scd_df = None
-            print("="*100, file_config['scd_type'])
+
             scd_invoke = SCD_FUNCTION[file_config['scd_type']]
-            scd_invoke(spark, raw_df, scd_df, file_config['primary_key'], hive_object, scd_object)
+            scd_invoke(spark, raw_df, scd_df, file_config['primary_key'].split(","), hive_object, scd_object)
 
             logger.info("Process Completed")
             # ScdComputation.read_raw_scd_records(

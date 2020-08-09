@@ -23,7 +23,7 @@ def scd_type_1(spark, raw_df, scd_df, primary_key_columns, hive_object, scd_obje
     #Add recordhash column to raw_df
     raw_df = hive_object.concatinate_operation(raw_df, record_hash_columns, "recordhash")
 
-    if not scd_df:
+    if scd_df:
         #Perform SCD Computation
         final_df = scd_object.scd1_records(raw_df, scd_df)
     else:
