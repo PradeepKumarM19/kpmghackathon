@@ -55,7 +55,7 @@ class Interface:
             logger.info("-"*50,"File : ", file)
             file_name = file.split("/")[-1]
             file_config = cls.filter_config(configuration, file_name)
-            print(file_config)
+
             if file_config is None:
                 logger.warn("File %s entry not found in configuration", file)
                 continue

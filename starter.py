@@ -52,7 +52,7 @@ class Root(ThemedTk):
             self.label.configure(text = self.filename[i])
 
     def run_scd(self):
-        self.withdraw()
+        self.destroy()
         Interface.execute_config(self.filename, self.config_file)
 
 

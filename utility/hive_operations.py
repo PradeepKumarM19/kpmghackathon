@@ -181,10 +181,9 @@ class HiveOperations:
 
     def insert_overwrite_operation(self, dataframe, db_name, table_name, partition_column=None):
         """Insert overwrite into hive table."""
-        #dataframe.createOrReplaceTempView("temp_view")
+
         table_name = f"{db_name}.{table_name}"
         if partition_column:
-            # #Reorder the partition columns at the end
 
             dataframe.createOrReplaceTempView("temp_view")
 
