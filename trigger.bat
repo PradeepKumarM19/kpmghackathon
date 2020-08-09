@@ -1,1 +1,3 @@
-spark-submit "C:\Users\rameshnewar\Documents\Git\kpmghackathon\starter.py" --config_file "C:\\Users\\rameshnewar\\Desktop\\config.csv"
+
+set CURRENTDIR=%~dp0
+spark-submit "%CURRENTDIR%starter.py" --config_file "%CURRENTDIR%config.csv"

@@ -13,7 +13,7 @@ def scd_type_1(spark, raw_df, scd_df, config_file, hive_object, scd_object):
         Result   : Returns the New and Update records
     """
     primary_key_columns = config_file['primary_key'].split(",")
-    partition_column = config_file['partition_column'].split(",")
+    partition_column = config_file['partition_column'].split(",") if config_file.get('partition_column') in config_file else None
     #Get the column list for record has calculation
     column_list = raw_df.columns
     record_hash_columns = [column for column in column_list if column not in primary_key_columns]
@@ -36,8 +36,11 @@ def scd_type_1(spark, raw_df, scd_df, config_file, hive_object, scd_object):
         print("final_df:", final_df.show())
     else:
         column_list = raw_df.columns
-        non_partition_column = [column for column in column_list if column not in partition_column]
-        final_df_column = [*non_partition_column, *partition_column]
+        if partition_column:
+            non_partition_column = [column for column in column_list if column not in partition_column]
+            final_df_column = [*non_partition_column, *partition_column]
+        else:
+            final_df_column = column_list
         final_df = raw_df.select(final_df_column)
         hive_object.create_table_operation(
             final_df, config_file['schema'], config_file['target_table'], partition_column=partition_column

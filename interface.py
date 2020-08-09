@@ -24,7 +24,11 @@ class Interface:
 
     @staticmethod
     def filter_config(conf, file_name):
-        file_conf = conf[conf["file_name"]==file_name].to_dict('records')
+        file_conf = (
+            conf[conf["file_name"]==file_name]
+            .replace({pd.np.nan: None})
+            .to_dict('records')
+        )
         if file_conf:
             return file_conf[0]
 
@@ -52,6 +56,7 @@ class Interface:
             logger.info("-"*50,"File : ", file)
             file_name = file.split("/")[-1]
             file_config = cls.filter_config(configuration, file_name)
+            print(file_config)
             if file_config is None:
                 logger.warn("File %s entry not found in configuration", file)
                 continue
