@@ -131,8 +131,11 @@ class HiveOperations:
         schema = ",".join([f"{data[0]} {data[1]}" for data in schema_list])
         return schema
 
-    def create_table_operation(self, dataframe, table_name, hive_location, partition_column=None, external=None):
+    def create_table_operation(self, dataframe, db_name, table_name, hive_location, partition_column=None, external=None):
         """Create hive table."""
+
+        self.spark(f"CREATE SCHEMA IF NOT EXISTS {db_name}")
+
         schema_list = dataframe.dtypes
         if not external:
             if not partition_column:
