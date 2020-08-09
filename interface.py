@@ -30,7 +30,13 @@ class Interface:
 
     @staticmethod
     def spark_session():
-        return SparkSession.builder.enableHiveSupport().appName("My main").getOrCreate()
+        return (
+            SparkSession
+            .builder
+            .enableHiveSupport()
+            .appName("My main")
+            .getOrCreate()
+        )
 
     @classmethod
     def execute_config(cls, files, config_file):
@@ -57,15 +63,13 @@ class Interface:
             #     scd_df = None
 
             scd_invoke = SCD_FUNCTION[file_config['scd_type']]
-            scd_invoke(spark, raw_df, scd_df, file_config['primary_key'].split(","), hive_object, scd_object)
+            final_df = scd_invoke(spark, raw_df, scd_df, file_config, hive_object, scd_object)
+
+            if not scd_df:
+                hive_object.create_table_operation(
+                    final_df, file_config['target_table'].split(".")[0], file_config['target_table'].split(".")[-1]
+                )
 
             logger.info("Process Completed")
-            # ScdComputation.read_raw_scd_records(
-            #     raw_file = file,
-            #     scd_type = file_config["scd_type"],
-            #     scd_table = file_config["scd_table"],
-            #     primary_keys = file_config["primary_keys"],
-            #     partition_keys = file_config["partition_keys"],
-            # )
 
 

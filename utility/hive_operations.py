@@ -19,16 +19,16 @@ STORED AS PARQUET LOCATION '{hive_location}'
 CREATE_INTERNAL_TABLE_WITH_PARTITION = """
 CREATE  TABLE IF NOT EXISTS {table_name} ({schema})
 PARTITIONED BY ({partition})
-STORED AS PARQUET LOCATION '{hive_location}'
+STORED AS PARQUET
 """
 
 CREATE_INTERNAL_TABLE_WITHOUT_PARTITION = """
 CREATE TABLE IF NOT EXISTS {table_name} ({schema})
-STORED AS PARQUET LOCATION '{hive_location}'
+STORED AS PARQUET
 """
 
 READ_TABLE_WITH_PARTITION = """
-SELECT * FROM {table_name} where {partition}
+SELECT * FROM {table_name}
 """
 
 READ_TABLE_WITHOUT_PARTITION = """
@@ -96,44 +96,32 @@ class HiveOperations:
         return scd_df
 
 
-    # def read_raw_scd_records(self, raw_table_name, scd_table_name, raw_partition=None, scd_partition=None):
+    # def read_raw_scd_records(self, scd_table_name, scd_partition=None):
     #     """Purpose : Read the Raw and Scd Table Records."""
     #     #Check if the scd table exists
     #     table_status = self.does_table_exists(scd_table_name)
 
     #     if table_status:
-    #         #Read Raw Dataframe Records
-    #         if raw_partition:
-    #             raw_df = READ_TABLE_WITH_PARTITION.format(table_name=raw_table_name, partition=raw_partition)
-    #         else:
-    #             raw_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=raw_table_name)
-
     #         #Read SCD Dataframe Records
     #         if scd_partition:
     #             scd_df = READ_TABLE_WITH_PARTITION.format(table_name=scd_table_name, partition=scd_partition)
     #         else:
     #             scd_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=scd_table_name)
     #     else:
-    #         #Read Raw Dataframe Records
-    #         if raw_partition:
-    #             raw_df = READ_TABLE_WITH_PARTITION.format(table_name=raw_table_name, partition=raw_partition)
-    #         else:
-    #             raw_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=raw_table_name)
-
     #         #Set SCD DF to NONE
     #         scd_df = None
 
-    #     return raw_df, scd_df
+    #     return scd_df
 
     def create_schema_operation(self, schema_list):
         """Create the table creation schema"""
         schema = ",".join([f"{data[0]} {data[1]}" for data in schema_list])
         return schema
 
-    def create_table_operation(self, dataframe, db_name, table_name, hive_location, partition_column=None, external=None):
+    def create_table_operation(self, dataframe, db_name, table_name, hive_location=None, partition_column=None, external=None):
         """Create hive table."""
 
-        self.spark(f"CREATE SCHEMA IF NOT EXISTS {db_name}")
+        self.spark.sql(f"CREATE SCHEMA IF NOT EXISTS {db_name}")
 
         schema_list = dataframe.dtypes
         if not external:
@@ -142,7 +130,6 @@ class HiveOperations:
                 query = CREATE_INTERNAL_TABLE_WITHOUT_PARTITION.format(
                     table_name=table_name,
                     schema=schema,
-                    hive_location=hive_location
                 )
             else:
                 pre_schema_list = [schema_key for schema_key in schema_list if schema_key[0] not in partition_column]
@@ -152,7 +139,6 @@ class HiveOperations:
                     table_name=table_name,
                     schema=schema,
                     partition=partition_string,
-                    hive_location=hive_location
                 )
         else:
             if not partition_column:
