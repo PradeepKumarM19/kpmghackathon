@@ -40,30 +40,28 @@ def scd_type_2(self, raw_df, scd_df, config_file, hive_object, scd_object):
 
         #Perform SCD Computation
         merged_df = scd_object.full_merge(raw_df, scd_df)
-        #print("merged_df:", merged_df.show())
-        #Unchanged SCD Records
+
         unchanged_df = scd_object.unchanged_records(merged_df, scd_column_list)
-        #print("unchanged_df:", unchanged_df.show())
 
         #New RAW Records
         new_df = scd_object.insert_new_records(merged_df, raw_column_list)
-        #print("new_df:", new_df.show())
+
         #Upadte RAW Records
         update_raw_df = scd_object.update_raw_records(merged_df, raw_column_list)
-        #print("update_raw_df:", update_raw_df.show())
+
         #Upadte SCD Records
         update_scd_df = scd_object.update_scd_records(merged_df, scd_column_list)
-        print("update_scd_df:", update_scd_df.show())
+
         #Union the Raw records to Rename the columns
         pre_insert_update_raw_df = new_df.unionAll(update_raw_df)
         pre_insert_update_raw_df = hive_object.rename_target_dataframe_columns(
             pre_insert_update_raw_df, raw_column_list
         )
         pre_insert_update_raw_df = pre_insert_update_raw_df.select(scd_column_list)
-        print("pre_insert_update_raw_df:", pre_insert_update_raw_df.show())
+
         #Union all dataframe for active Records
         final_df = unchanged_df.unionAll(pre_insert_update_raw_df).unionAll(update_scd_df)
-        print("final_df:", final_df.show())
+
     else:
         #Get the Column list
         raw_column_list = raw_df.columns
@@ -82,4 +80,3 @@ def scd_type_2(self, raw_df, scd_df, config_file, hive_object, scd_object):
     hive_object.insert_overwrite_operation(
         final_df, config_file['schema'], config_file['target_table'], partition_column=partition_column
     )
-

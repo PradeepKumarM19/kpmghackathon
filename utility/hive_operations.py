@@ -73,12 +73,12 @@ class HiveOperations:
         source_colum_list = src_dataframe.columns
         for column in source_colum_list:
             src_dataframe = src_dataframe.withColumnRenamed(column, f"src_{column}")
-        print("source_df:", src_dataframe.columns)
+
         return src_dataframe
 
     def rename_target_dataframe_columns(self, targer_df, target_colum_list):
         """Remove the perfix src_ from all the columns in target dataframe."""
-        print("target_colum_list:", target_colum_list)
+
         for column in target_colum_list:
             targer_df = targer_df.withColumnRenamed(column, column.split("src_", 1)[1])
         return targer_df
@@ -86,7 +86,6 @@ class HiveOperations:
     def does_table_exists(self, table_name):
         """Check if table exixts or not."""
         return self.spark.catalog._jcatalog.tableExists(table_name)
-
 
     def read_raw_records(self, raw_file):
         raw_df = spark_utils.read_data(self.spark, "file", raw_file)
@@ -97,24 +96,6 @@ class HiveOperations:
         scd_df =  spark_utils.read_data(self.spark, "table", target_table)
 
         return scd_df
-
-
-    # def read_raw_scd_records(self, scd_table_name, scd_partition=None):
-    #     """Purpose : Read the Raw and Scd Table Records."""
-    #     #Check if the scd table exists
-    #     table_status = self.does_table_exists(scd_table_name)
-
-    #     if table_status:
-    #         #Read SCD Dataframe Records
-    #         if scd_partition:
-    #             scd_df = READ_TABLE_WITH_PARTITION.format(table_name=scd_table_name, partition=scd_partition)
-    #         else:
-    #             scd_df = READ_TABLE_WITHOUT_PARTITION.format(table_name=scd_table_name)
-    #     else:
-    #         #Set SCD DF to NONE
-    #         scd_df = None
-
-    #     return scd_df
 
     def create_schema_operation(self, schema_list):
         """Create the table creation schema"""
@@ -166,7 +147,6 @@ class HiveOperations:
                 )
         
         #execute query
-
         self.spark.sql(query)
 
     def insert_into_operation(self, dataframe, table_name, partition_column=None):

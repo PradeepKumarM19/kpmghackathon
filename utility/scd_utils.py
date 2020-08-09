@@ -108,5 +108,4 @@ class ScdComputation:
         )
 
         return unchanged_records_df
-
             

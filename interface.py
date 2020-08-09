@@ -1,5 +1,4 @@
 import os
-
 import pandas as pd
 import logging
 from pyspark.sql import SparkSession
@@ -68,5 +67,3 @@ class Interface:
             scd_invoke(spark, raw_df, scd_df, file_config, hive_object, scd_object)
 
             logger.info("Process Completed")
-
-
