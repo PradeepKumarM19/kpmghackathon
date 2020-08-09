@@ -33,7 +33,6 @@ class ScdComputation:
         raw_df = (
             raw_df
             .withColumn("src_is_current", lit(True))
-            .withColumn("src_is_delete", lit(False))
             .withColumn("src_start_date", lit(current_date))
             .withColumn("src_end_date", lit(high_date))
         ) 
@@ -60,7 +59,6 @@ class ScdComputation:
             .withColumn(
                 'action',
                 when(merged_df.src_recordhash != merged_df.recordhash, 'UPSERT')
-                .when(merged_df.src_primarykey.isNull() and merged_df.is_current, 'DELETE')
                 .when(merged_df.primarykey.isNull(), 'INSERT')
                 .otherwise('NOACTION')
             )
@@ -81,20 +79,9 @@ class ScdComputation:
         latest_df = (
             merged_df.filter(merged_df.action == 'INSERT')
             .withColumn("src_is_current", lit(True))
-            .withColumn("src_is_delete", lit(False))
             .select(raw_df_columns)
         )
         return latest_df
-
-    def delete_scd_records(self, merged_df, scd_df_columns):
-        """Return the data frame which has to be marked as delete."""
-        delete_df = (
-            merged_df.filter(merged_df.action == 'DELETE')
-            .withColumn("is_current", lit(False))
-            .withColumn("is_delete", lit(True))
-            .select(scd_df_columns)
-        )
-        return delete_df
 
     def update_raw_records(self, merged_df, raw_df_columns):
         """Return the raw records to be updated."""
@@ -102,7 +89,6 @@ class ScdComputation:
         update_raw_df = (
             merged_df.filter(merged_df.action == 'UPSERT')
             .withColumn("src_is_current", lit(True))
-            .withColumn("src_is_delete", lit(False))
             .select(raw_df_columns)
         )
         return update_raw_df
@@ -113,7 +99,6 @@ class ScdComputation:
             merged_df.filter(merged_df.action == 'UPSERT')
             .withColumn("end_date", date_sub(merged_df.src_start_date, 1))
             .withColumn("is_current", lit(False))
-            .withColumn("is_delete", lit(False))
             .select(scd_df_columns)
         )
         return update_scd_records
