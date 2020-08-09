@@ -5,6 +5,28 @@ from pysprak.sql.functions import format_string
 from utility import spark_utils
 from utility.spark_utils import SparkUtils
 
+CREATE_EXETRNAL_TABLE_WITH_PARTITION = """
+CREATE EXTERNAL TABLE IF NOT EXISTS {table_name} ({schema})
+PARTITIONED BY ({partition})
+STORED AS PARQUET LOCATION '{hive_location}'
+"""
+
+CREATE_EXETRNAL_TABLE_WITHOUT_PARTITION = """
+CREATE EXTERNAL TABLE IF NOT EXISTS {table_name} ({schema})
+STORED AS PARQUET LOCATION '{hive_location}'
+"""
+
+CREATE_INTERNAL_TABLE_WITH_PARTITION = """
+CREATE  TABLE IF NOT EXISTS {table_name} ({schema})
+PARTITIONED BY ({partition})
+STORED AS PARQUET LOCATION '{hive_location}'
+"""
+
+CREATE_INTERNAL_TABLE_WITHOUT_PARTITION = """
+CREATE TABLE IF NOT EXISTS {table_name} ({schema})
+STORED AS PARQUET LOCATION '{hive_location}'
+"""
+
 READ_TABLE_WITH_PARTITION = """
 SELECT * FROM {table_name} where {partition}
 """
@@ -103,6 +125,55 @@ class HiveOperations:
     #         scd_df = None
 
     #     return raw_df, scd_df
+
+    def create_schema_operation(self, schema_list):
+        """Create the table creation schema"""
+        schema = ",".join([f"{data[0]} {data[1]}" for data in schema_list])
+        return schema
+
+    def create_table_operation(self, dataframe, table_name, hive_location, partition_column=None, external=None):
+        """Create hive table."""
+        schema_list = dataframe.dtypes
+        if not external:
+            if not partition_column:
+                schema = self.create_schema_operation(schema_list)
+                query = CREATE_INTERNAL_TABLE_WITHOUT_PARTITION.format(
+                    table_name=table_name,
+                    schema=schema,
+                    hive_location=hive_location
+                )
+            else:
+                pre_schema_list = [schema_key for schema_key in schema_list if schema_key[0] not in partition_column]
+                schema = self.create_schema_operation(pre_schema_list)
+                partition_string = ",".join([f"{data} string" for data in partition_column])
+                query = CREATE_INTERNAL_TABLE_WITH_PARTITION.format(
+                    table_name=table_name,
+                    schema=schema,
+                    partition=partition_string,
+                    hive_location=hive_location
+                )
+        else:
+            if not partition_column:
+                schema = self.create_schema_operation(schema_list)
+                query = CREATE_EXETRNAL_TABLE_WITHOUT_PARTITION.format(
+                    table_name=table_name,
+                    schema=schema,
+                    hive_location=hive_location
+                )
+            else:
+                pre_schema_list = [schema_key for schema_key in schema_list if schema_key[0] not in partition_column]
+                schema = self.create_schema_operation(pre_schema_list)
+                partition_string = ",".join([f"{data} string" for data in partition_column])
+                query = CREATE_EXETRNAL_TABLE_WITH_PARTITION.format(
+                    table_name=table_name,
+                    schema=schema,
+                    partition=partition_string,
+                    hive_location=hive_location
+                )
+        
+        #execute query
+        self.spark.sql(query)
+
 
     def insert_into_operation(self, dataframe, table_name, partition_column=None):
         """Insert into hive table."""
