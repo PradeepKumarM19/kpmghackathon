@@ -1,9 +1,9 @@
-from pysprak.sql.functions import sha2
-from pysprak.sql.functions import concat
-from pysprak.sql.functions import format_string
+from pyspark.sql.functions import sha2
+from pyspark.sql.functions import concat
+from pyspark.sql.functions import format_string
 
 from utility import spark_utils
-from utility.spark_utils import SparkUtils
+# from utility.spark_utils import SparkUtils
 
 CREATE_EXETRNAL_TABLE_WITH_PARTITION = """
 CREATE EXTERNAL TABLE IF NOT EXISTS {table_name} ({schema})
@@ -82,19 +82,18 @@ class HiveOperations:
 
     def does_table_exists(self, table_name):
         """Check if table exixts or not."""
-        return self.spark._jcatalog.tableExists(table_name)
+        return self.spark.catalog._jcatalog.tableExists(table_name)
 
 
-    def read_raw_scd_records(
-            self,
-            raw_file,
-            scd_type,
-            scd_table,
-            primary_keys,
-            partition_keys,
-    ):
-        raw_input = SparkUtils.read_data(self.spark, "file", raw_file)
-        scd_table =  SparkUtils.read_data(self.spark, "table", scd_table)
+    def read_raw_records(self, raw_file):
+        raw_df = spark_utils.read_data(self.spark, "file", raw_file)
+
+        return raw_df
+
+    def read_scd_table(self, target_table):
+        scd_df =  spark_utils.read_data(self.spark, "table", target_table)
+
+        return scd_df
 
 
     # def read_raw_scd_records(self, raw_table_name, scd_table_name, raw_partition=None, scd_partition=None):
