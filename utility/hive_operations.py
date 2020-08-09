@@ -174,17 +174,30 @@ class HiveOperations:
         #execute query
         self.spark.sql(query)
 
-
     def insert_into_operation(self, dataframe, table_name, partition_column=None):
         """Insert into hive table."""
-        dataframe.createOrReplaceTempView("temp_view")
+
         if partition_column:
+            #Reorder the partition columns at the end
+            column_list = dataframe.columns
+            non_partition_column = [column for column in column_list if column not in partition_column]
+            final_df_column = [*non_partition_column, *partition_column]
+            
+            #create the final df with partition column at the end.
+            final_df = dataframe.select(final_df_column)
+
+            #create a temp view
+            final_df.createOrReplaceTempView("temp_view")
+
             query = INSERT_INTO_WITH_PARTITION.format(
                 table_name=table_name,
                 partition=partition_column,
                 view_name="temp_view"
             )
         else:
+            #create a temp view
+            dataframe.createOrReplaceTempView("temp_view")
+
             query = INSERT_INTO_WITHOUT_PARTITION.format(
                 table_name=table_name,
                 view_name="temp_view"
@@ -193,16 +206,32 @@ class HiveOperations:
 
     def insert_overwrite_operation(self, dataframe, table_name, partition_column=None):
         """Insert overwrite into hive table."""
-        dataframe.createOrReplaceTempView("temp_view")
+        #dataframe.createOrReplaceTempView("temp_view")
+        
         if partition_column:
+            #Reorder the partition columns at the end
+            column_list = dataframe.columns
+            non_partition_column = [column for column in column_list if column not in partition_column]
+            final_df_column = [*non_partition_column, *partition_column]
+            
+            #create the final df with partition column at the end.
+            final_df = dataframe.select(final_df_column)
+
+            #create a temp view
+            final_df.createOrReplaceTempView("temp_view")
+
             query = INSERT_OVERWRITE_WITH_PARTITION.format(
                 table_name=table_name,
                 partition=partition_column,
                 view_name="temp_view"
             )
         else:
+            #create a temp view
+            dataframe.createOrReplaceTempView("temp_view")
+
             query = INSERT_OVERWRITE_WITHOUT_PARTITION.format(
                 table_name=table_name,
                 view_name="temp_view"
             )
+
         self.spark.sql(query)
