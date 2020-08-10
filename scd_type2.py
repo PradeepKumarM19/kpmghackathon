@@ -29,7 +29,7 @@ def scd_type_2(self, raw_df, scd_df, config_file, hive_object, scd_object):
     """
     #Prepare Raw Dataframe
     primary_key_columns = config_file['primary_key'].split(",")
-    partition_column = config_file['partition_column'].split(",")
+    partition_column = config_file['partition_column'].split(",") if config_file['partition_column'] else None
 
     raw_df = prepare_raw_df(raw_df, primary_key_columns, hive_object, scd_object)
     
@@ -73,6 +73,7 @@ def scd_type_2(self, raw_df, scd_df, config_file, hive_object, scd_object):
         final_df_column = [*non_partition_column, *partition_column]
         final_df = final_df.select(final_df_column)
 
+        print("1"*100, final_df)
         hive_object.create_table_operation(
             final_df, config_file['schema'], config_file['target_table'], partition_column=partition_column
         )

@@ -8,7 +8,8 @@ def scd_type_1(spark, raw_df, scd_df, config_file, hive_object, scd_object):
         Result   : Returns the New and Update records
     """
     primary_key_columns = config_file['primary_key'].split(",")
-    partition_column = config_file['partition_column'].split(",") if config_file.get('partition_column') in config_file else None
+    partition_column = config_file['partition_column'].split(",") if config_file['partition_column'] else None
+    
     #Get the column list for record has calculation
     column_list = raw_df.columns
     record_hash_columns = [column for column in column_list if column not in primary_key_columns]
