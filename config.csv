@@ -1,3 +1,3 @@
 file_id,file_name,scd_type,schema,target_table,primary_key,partition_column
-2,insurance_sample.csv,1,sales,ins_trans,policyID,county
-3,personal_sample.csv,2,test,personal,id,"activeflag,gender"
+2,insurance_sample.csv,1,sales,insurance,policyID,county
+3,personal_sample.csv,2,crm,personal,id,"activeflag,gender"
